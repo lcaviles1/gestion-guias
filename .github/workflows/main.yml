@@ -1,4 +1,4 @@
-name: CI Docker Hub
+name: CI/CD Docker Hub y EC2
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  build-push-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,3 +33,30 @@ jobs:
 
       - name: Publicar imagen en Docker Hub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/gestion-guias:latest
+
+      - name: Configurar llave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Desplegar en EC2
+        run: |
+          ssh -i ~/.ssh/ec2_key ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            sudo mkdir -p /mnt/efs/guias
+
+            if ! df -h | grep -q "/mnt/efs"; then
+              sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-075b460cadcb04f67.efs.us-east-1.amazonaws.com:/ /mnt/efs
+            fi
+
+            docker pull lcaviles/gestion-guias:latest
+            docker rm -f gestion-guias || true
+            docker run -d \
+              --name gestion-guias \
+              -p 8080:8080 \
+              -v /mnt/efs:/app/efs \
+              lcaviles/gestion-guias:latest
+
+            docker ps
+          EOF
