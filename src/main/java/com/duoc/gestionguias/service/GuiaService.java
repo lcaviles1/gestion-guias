@@ -97,21 +97,16 @@ public class GuiaService {
         return s3Key;
     }
 
-    public String descargarGuiaDesdeS3(String key, String usuario) {
-        if (!"lucas".equalsIgnoreCase(usuario)) {
-            throw new SecurityException("Usuario sin permisos para descargar esta guía");
-        }
-
+    public String descargarGuiaDesdeS3(String key) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
                 .build();
-
+    
         ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(getObjectRequest);
-
+    
         return objectBytes.asUtf8String();
     }
-
     public String actualizarGuiaEnS3(String key, String nuevoContenido) {
         String contenidoActualizado = """
                 GUIA DE DESPACHO ACTUALIZADA

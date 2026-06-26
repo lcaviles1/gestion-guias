@@ -1,13 +1,21 @@
 package com.duoc.gestionguias.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Instant;
+import java.util.Map;
 
 @RestController
 public class HealthController {
 
-    @GetMapping("/api/health")
-    public String health() {
-        return "API Gestion Guias funcionando correctamente";
+    @GetMapping("/health")
+    public ResponseEntity<?> health() {
+        return ResponseEntity.ok(Map.of(
+                "status", "OK",
+                "service", "gestion-guias",
+                "timestamp", Instant.now().toString()
+        ));
     }
 }

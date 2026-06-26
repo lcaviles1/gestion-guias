@@ -57,29 +57,21 @@ public class GuiaController {
     }
 
     @GetMapping("/descargar")
-    public ResponseEntity<?> descargarGuia(
-            @RequestParam String key,
-            @RequestParam String usuario
-    ) {
-        try {
-            String contenido = guiaService.descargarGuiaDesdeS3(key, usuario);
+public ResponseEntity<?> descargarGuia(@RequestParam String key) {
+    try {
+        String contenido = guiaService.descargarGuiaDesdeS3(key);
 
-            return ResponseEntity.ok(Map.of(
-                    "mensaje", "Guía descargada correctamente desde S3",
-                    "contenido", contenido
-            ));
-        } catch (SecurityException e) {
-            return ResponseEntity.status(403).body(Map.of(
-                    "error", "Acceso denegado",
-                    "detalle", e.getMessage()
-            ));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", "No se pudo descargar la guía",
-                    "detalle", e.getMessage()
-            ));
-        }
+        return ResponseEntity.ok(Map.of(
+                "mensaje", "Guía descargada correctamente desde S3",
+                "contenido", contenido
+        ));
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(Map.of(
+                "error", "No se pudo descargar la guía",
+                "detalle", e.getMessage()
+        ));
     }
+}
 
     @PutMapping("/actualizar")
     public ResponseEntity<?> actualizarGuia(@RequestBody ActualizarGuiaRequest request) {
