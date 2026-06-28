@@ -79,9 +79,11 @@ public class SecurityConfig {
             Set<GrantedAuthority> authorities = new HashSet<>();
 
             agregarRolesDesdeClaim(jwt, authorities, "roles");
-            agregarRolesDesdeClaim(jwt, authorities, "extension_roles");
-            agregarRolesDesdeClaim(jwt, authorities, "extension_Roles");
-            agregarRolesDesdeClaim(jwt, authorities, "role");
+agregarRolesDesdeClaim(jwt, authorities, "scp");
+agregarRolesDesdeClaim(jwt, authorities, "scope");
+agregarRolesDesdeClaim(jwt, authorities, "extension_roles");
+agregarRolesDesdeClaim(jwt, authorities, "extension_Roles");
+agregarRolesDesdeClaim(jwt, authorities, "role");
 
             return authorities;
         });
