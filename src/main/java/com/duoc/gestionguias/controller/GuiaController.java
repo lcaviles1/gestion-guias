@@ -1,7 +1,9 @@
 package com.duoc.gestionguias.controller;
 
 import com.duoc.gestionguias.dto.ActualizarGuiaRequest;
+import com.duoc.gestionguias.dto.GuiaMensaje;
 import com.duoc.gestionguias.dto.GuiaRequest;
+import com.duoc.gestionguias.service.GuiaProductorService;
 import com.duoc.gestionguias.service.GuiaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,19 +16,28 @@ import java.util.Map;
 public class GuiaController {
 
     private final GuiaService guiaService;
+    private final GuiaProductorService guiaProductorService;
 
-    public GuiaController(GuiaService guiaService) {
+    public GuiaController(
+            GuiaService guiaService,
+            GuiaProductorService guiaProductorService
+    ) {
         this.guiaService = guiaService;
+        this.guiaProductorService = guiaProductorService;
     }
 
     @PostMapping("/crear")
     public ResponseEntity<?> crearGuia(@RequestBody GuiaRequest request) {
         try {
             String nombreArchivo = guiaService.crearGuiaTemporal(request);
+            GuiaMensaje mensajeEncolado =
+                    guiaProductorService.encolarGuia(request, nombreArchivo);
 
             return ResponseEntity.ok(Map.of(
-                    "mensaje", "Guía generada temporalmente en EFS",
-                    "archivo", nombreArchivo
+                    "mensaje", "Guía generada en EFS y enviada a RabbitMQ",
+                    "archivo", nombreArchivo,
+                    "idMensaje", mensajeEncolado.getIdMensaje(),
+                    "cola", "guias.procesamiento"
             ));
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of(
