@@ -48,6 +48,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/guias/crear")
                         .hasRole(ROLE_GESTOR_GUIAS)
 
+                        .requestMatchers(HttpMethod.POST, "/api/guias/consumir")
+                        .hasRole(ROLE_GESTOR_GUIAS)
+
+                        .requestMatchers(HttpMethod.GET, "/api/guias/procesadas/count")
+                        .hasRole(ROLE_GESTOR_GUIAS)
+
                         .requestMatchers(HttpMethod.POST, "/api/guias/subir")
                         .hasRole(ROLE_GESTOR_GUIAS)
 
