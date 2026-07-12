@@ -3,6 +3,7 @@ package com.duoc.gestionguias.controller;
 import com.duoc.gestionguias.dto.ActualizarGuiaRequest;
 import com.duoc.gestionguias.dto.GuiaMensaje;
 import com.duoc.gestionguias.dto.GuiaRequest;
+import com.duoc.gestionguias.service.GuiaConsumidorService;
 import com.duoc.gestionguias.service.GuiaProductorService;
 import com.duoc.gestionguias.service.GuiaService;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,16 @@ public class GuiaController {
 
     private final GuiaService guiaService;
     private final GuiaProductorService guiaProductorService;
+    private final GuiaConsumidorService guiaConsumidorService;
 
     public GuiaController(
             GuiaService guiaService,
-            GuiaProductorService guiaProductorService
+            GuiaProductorService guiaProductorService,
+            GuiaConsumidorService guiaConsumidorService
     ) {
         this.guiaService = guiaService;
         this.guiaProductorService = guiaProductorService;
+        this.guiaConsumidorService = guiaConsumidorService;
     }
 
     @PostMapping("/crear")
@@ -42,6 +46,45 @@ public class GuiaController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of(
                     "error", "No se pudo generar la guía",
+                    "detalle", e.getMessage()
+            ));
+        }
+    }
+
+
+    @PostMapping("/consumir")
+    public ResponseEntity<?> consumirGuia() {
+        try {
+            GuiaMensaje mensaje = guiaConsumidorService.consumirYGuardar();
+
+            if (mensaje == null) {
+                return ResponseEntity.ok(Map.of(
+                        "mensaje", "No hay mensajes disponibles en la cola"
+                ));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Guía consumida y almacenada en RDS MySQL",
+                    "idMensaje", mensaje.getIdMensaje(),
+                    "archivo", mensaje.getArchivo()
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "error", "No se pudo procesar la guía",
+                    "detalle", e.getMessage()
+            ));
+        }
+    }
+
+    @GetMapping("/procesadas/count")
+    public ResponseEntity<?> contarProcesadas() {
+        try {
+            return ResponseEntity.ok(Map.of(
+                    "cantidad", guiaConsumidorService.contarProcesadas()
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "error", "No se pudo consultar la cantidad procesada",
                     "detalle", e.getMessage()
             ));
         }
